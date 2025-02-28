@@ -11,38 +11,54 @@ Lokale Instanzen von Apache Kafka und Cassandra werden in Docker-Containern gest
     \centering%
     \includegraphics[width=0.3\textwidth]{Graphics/ParkingLotTable.png}%
     \caption{Parkhaus-Tabelle}%
+    \label{fig:table_parking_lots}
 \end{figure}%
+
+In der Tabelle \ref{fig:table_parking_lots} sind alle Parkhäuser, die im System existieren mit ihrem Standort, sowie ihrer Kapazität, hinterlegt.
+Die Daten hierin werden aktuell manuell angelegt.
 
 \begin{figure}[h!]%
     \centering%
     \includegraphics[width=0.3\textwidth]{Graphics/parking_events.png}%
     \caption{Parkevent-Tabelle}%
+    \label{fig:table_parking_events}
 \end{figure}%
+
+In der Tabelle \ref{fig:table_parking_events} sind alle in der Vergangenheit geschehenen Park-Events gespeichert.
+Bei diesen Daten handelt es sich um reine Rohdaten, die den unverarbeiteten Daten von Parkhäusern entsprechen.
 
 \begin{figure}[h!]%
     \centering%
     \includegraphics[width=0.3\textwidth]{Graphics/occupancy.png}%
     \caption{Zwischensummen-Tabelle}%
+    \label{fig:table_occupancy}
 \end{figure}%
 
-Die 
+In der Tabelle \ref{fig:table_occupancy} werden Füllstände der Parkhauser zu bestimmten Zeitpunkten gespeichert.
+Diese Daten werden periodisch vom Batch-Layer inkrementell berechnet und können bei Bedarf, beispielsweise nach Rohdaten-Korrektur oder Batch-Prozess-Korrektur nochmal über alle Daten hinweg neu berechnet werden.
 
 \section{Core-Bibliothek}
 Auf der Core-Bibliothek bauen alle anderen Projekte auf.
 In dieser Bibliothek befinden sich alle geteilten Programmteile:
 \begin{itemize}
-    \item \textbf{Konfiguration} (Kafka-Topics, Cassandra-Aufbau: Tabellen und -Spaltennamen)
-    \item \textbf{Geteilte Interfaces} (ICarModel, ICarData, IParkingEventData)
-    \item \textbf{Geteilte Datenstrukturen} (CarEntryData, CarExitData, OccupancyState)
-    \item \textbf{Serialisierungs- und Deserialisierungsfuntionen} Die Datenstrukturen bin\"ar oder als String serialisieren und wiedererstellen.
-    \item \textbf{CassandraHelper} Eine Hilfsklasse, die die Verbindung zur Cassandra-Datenbank verwaltet und alle in anderen Projekten verwendeten Datenbankzugriffe mit Hilfe von CQL (Cassandra Query Language) umsetzt.
+    \item \textbf{Konfiguration}: string Konstanten für Kafka-Topics, sowie Cassandra-Aufbau bestehend aus Tabellen und -Spaltennamen
+    \item \textbf{Geteilte Interfaces}: ICarModel (allgemeine Autoinformationen), ICarData (ICarModel + spezifische Autoinformationen), IParkingEventData (ICarData + Parkhaus + Einfahrts- oder Ausfahrtszeit)
+    \item \textbf{Geteilte Datenstrukturen}: CarEntryData (rerpäsentiert ein vollständiges Einfahrts-Event), CarExitData (rerpäsentiert ein vollständiges Ausfahrts-Event), OccupancyState (repräsentiert den exakten Füllstand eines Parkhauses zu einem gegebenen Zeitpunkt)
+    \item \textbf{Serialisierungs- und Deserialisierungsfuntionen}: Datenstrukturen binär oder als String serialisieren und wiedererstellen
+    \item \textbf{CassandraHelper}: Hilfsklasse, die die Verbindung zur Cassandra-Datenbank verwaltet und alle in anderen Projekten verwendeten Datenbankzugriffe mit Hilfe von CQL (Cassandra Query Language) umsetzt
+    \item \textbf{Setup-Validierung}: ermöglicht Anwendungen, die Kafka oder Cassandra benötigen zu überprüfen, ob Kafka und Cassandra korrekt aufgesetzt sind, bevor sie starten
 \end{itemize}
 
 
 \section{Datengrundlage}
-Da keine realen Daten zur Verf\"ugung stehen, verwenden wir einen selbst geschriebenen Datengenerator, der Ein- und Ausfahrten in ein Parkhaus über Zeit simuliert.
-Dabei werden Parkevent-Daten \quotes{CarEntryData} und \quotes{CarExitData} bestehend aus Parkhaus-Id, Zeitstempel, Nummernschild, Automarke, Automodell, Farbe, gemessener Länge, gemessener Breite, gemessener Höhe und gemessenem Gewicht.
+Da keine realen Daten zur Verfügung stehen, verwenden wir einen selbst geschriebenen Datengenerator, der Ein- und Ausfahrten in ein Parkhaus über Zeit simuliert.
+Dabei werden Parkevent-Daten \quotes{CarEntryData} und \quotes{CarExitData} bestehend aus Parkhaus-Id, Zeitstempel, Nummernschild, Automarke, Automodell, Farbe, gemessener Länge, gemessener Breite, gemessener Höhe und gemessenem Gewicht generiert.
+Die Parkevent-Daten werden dann direkt in die Kafka-Topic \quotes{car-events} geschrieben.
 Ausfahrts-Events werden stets basierend auf einem zuvor generierten Einfahrts-Event, zu dem es noch kein zugehöriges Ausfahrts-Event gibt generiert.
+Dieser Prozess geschieht stark beschleunigt, um einfaches Testen zu ermöglichen: Innerhalb von Minuten werden Daten für einen ganzen Tag generiert.
+Um die Daten für mehrere Parkhäuser auf einmal zu generieren, können beliebig viele Parkhäuser konfiguriert werden.
+Für jedes Parkhaus wird dann ein entsprechender Generator-Thread gestartet.
+Der Generator berücksichtigt die maximale Kapazität eines Parkhaus und generiert morgens mehr Einfahrts-Events und abends mehr Ausfahrts-Events.
 %Todo: Tabelle angeben
 In der Datenbank stehen Einfahrts- und Ausfahrts-Events in der selben Tabelle und werden nur durch ein bool-Flag, bei dem \textbf{True} ein Einfahrts-Event markiert, unterschieden.
 
@@ -76,7 +92,7 @@ Alle Instanzen teilen die selbe Kafka-GroupId, wodurch jedes Event nur an genau 
 In der Kommandozeile werden Ein- und Ausfahrten ausgegeben.
 
 \subsection{Batch-Processing}
-Das Batch-Processing des Batch Layers ist eine Kommandozeilenanwendung, die periodisch die Daten der vergangenen halben Stunde aus der Datenbank läd und darauf basierend Zwischenfüllstende je Parkhaus je 10 Minuten berechnet.
+Das Batch-Processing des Batch Layers ist eine Kommandozeilenanwendung, die periodisch die Daten der vergangenen halben Stunde aus der Datenbank läd und darauf basierend Zwischenfüllstände je Parkhaus je 10 Minuten berechnet.
 Da der Datengenerator beschleunigt Daten generiert, läuft diese Anwendung auch beschleunigt und berechnet alle 2 Minuten die Daten einer halben Stunde.
 
 
@@ -90,6 +106,8 @@ Dieser Cache beinhaltet die aktuelle Anzahl an Autos im Parkhaus, die sich aus d
 Immer wenn eine Nachricht in \quotes{batch-notification} den Abschluss eines weiteren Batch-Vorgangs signalisiert, wird die aktuelle Batch-Zwischensumme neu geladen, sowie der veraltete Teil der Speed Layer Daten aus \quotes{car-events-preprocessed} verworfen.
 Aufgrund des Aufbaus des Speed-Layers, sowie der asynchronen Natur von Batch- und Speed-Layer kann ein Ergebnis des Speed-Layers Daten aus 2 Batch-Berechnungen beinhalten.
 Das kann zu temporären Inkonsistenzen führen, die aber nach der nächsten Batch-Berechnung korrigiert sind.
+Anwendungen können die Daten vom Serving Layer über TCP/IP abfragen.
+Wenn Historische Daten, die sich nicht im Cache befinden, wie Füllstände über Zeit abgefragt werden, leitet das Serving Layer die Anfrage an die Cassandra-Datenbank durch.
 
 \section{Frontend}
 Das Frontend ist in Avalonia 
