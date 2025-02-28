@@ -102,9 +102,10 @@ In der Kommandozeile werden Ein- und Ausfahrten ausgegeben.
 
 \subsection{Batch-Processing}
 Das Batch-Processing des Batch Layers ist eine Kommandozeilenanwendung, die periodisch die Daten der vergangenen halben Stunde aus der Datenbank läd und darauf basierend Füllstände je Parkhaus in 10 Minuten Intervallen berechnet.
-Da der Datengenerator beschleunigt Daten generiert, läuft diese Anwendung auch beschleunigt und berechnet alle 2 Minuten die Daten einer halben Stunde.
+Die im Batch-Processing berechneten Daten (Batch-Viwes) werden in die Datenbank zurückgeschrieben.
 Immer, wenn ein Batch-Vorgang abgeschlossen ist, schreibt die Anwendung eine Benachrichtigung in die Kafka-Topic \quotes{batch-notification}.
-Diese Nachricht dient dem Serving Layer zu
+Diese Nachricht signalisiert dem Serving Layer, dass es seine Batch-Daten neu laden und veraltete Speed-Layer-Daten verwerfen soll.
+Da der Datengenerator beschleunigt Daten generiert, läuft diese Anwendung auch beschleunigt und berechnet alle 2 Minuten die Daten einer halben Stunde.
 
 
 \section{Serving Layer}
