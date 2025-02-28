@@ -1,1 +1,31 @@
 \chapter{Evaluierung}
+In diesem Kapitel soll die Fallstudie in Hinblick auf die Forschungsfragen genauer evaluiert werden. Wir möchten bewerten, ob unsere Fallstudie dazu geeignet ist, die architektonischen Eigenschaften der Lambda-Architektur zu verwenden. Außerdem wollen wir in diesem Kapitel noch einmal die Herausforderungen erläutern, auf die wir bei der Implementierung gestoßen sind
+
+Evaluierung der Fallstudie
+Grundsätzlich ist unser Fallstudienszenario für die Implementierung mit der Lambda-Architektur geeignet. Das Serving Layer unserer Fallstudie ist in der Lage, die Daten der Batch und Speed Layer zu verbinden, um Fragen über den aktuellen Füllstand zu beantworten. 
+
+Dennoch ist die Lambda-Architektur für unsere konkrete Implementierung der Fallstudie überdimensioniert, da Generierung und Verarbeitung auf einem einzigen Gerät stattfinden müssen. Somit sind wir nur in der Lage, eine relativ geringe Datenmenge zu generieren.
+
+Die Fallstudie zeigt die Trennung der Architektur in 2 Quanten, Speed und Batchlayer. 
+
+Die Erweiterung des Projektes um neue Berechnungen im Batch Layer ist aufwändig. 
+Neben der Implementierung der Berechnung selbst muss eine Datenbanktabelle zum persistieren des Ergebnis (Batchview) angelegt werden
+und  das Servinglayer um eine entsprechende Schnittstelle erweitert werden.
+Soll die Berechnung mit Echtzeitdaten aus dem Speedlayer angereichert werden, muss dieses ebenfalls erweitert werden.
+
+Durch das Beibehalten sämtlicher Rohdaten im Batchlayer ist die Architektur fehlerresistent. 
+Beispielsweise können als fehlerhaft identifizierte Datenpunkte im Batchlayer korrigiert oder entfernt werden,
+womit die Fehler nach der Berechnung des nächsten Batchviews behoben sind.
+
+Eine fundierte Bewertung der Systemperformance ist nicht möglich, da das gesamte System mangels einer Serverfarm auf einer einzigen Maschine ausgeführt wird und auch keine riesigen Datenmengen zur Verfügung stehen.
+
+Dank dem Einsatz von Apache Kafka und Apache Cassandra ist das System grundsätzlich skalierbar.
+Es kann einfach um weitereParkhäuser erweitert werden,
+wobei für jedes ein eigener SpeedLayerWorker instanziiert werden kann.
+Neue Batch-Berechnungen können auf anderen Maschinen ausgeführt werden.
+Das Servinglayer kann beliebig oft instanziiert und auf verschiedenen Maschinen ausgeführt werden,
+allerdings wäre die Erweiterung um einen Loadbalancer notwendig,
+damit die TCP/IP-Anfragen auf die unterschiedlichen Instanzen verteilt werden können.
+
+Die Implementierung insbesondere des ServingLayers ist relativ anspruchsvoll.
+Zusätzlich entsteht durch die Aufteilung in 3 Schichten ein hoher Kommunikationsaufwand.
