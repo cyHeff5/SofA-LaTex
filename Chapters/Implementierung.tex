@@ -92,7 +92,7 @@ Alle Instanzen teilen die selbe Kafka-GroupId, wodurch jedes Event nur an genau 
 In der Kommandozeile werden Ein- und Ausfahrten ausgegeben.
 
 \subsection{Batch-Processing}
-Das Batch-Processing des Batch Layers ist eine Kommandozeilenanwendung, die periodisch die Daten der vergangenen halben Stunde aus der Datenbank läd und darauf basierend Zwischenfüllstände je Parkhaus je 10 Minuten berechnet.
+Das Batch-Processing des Batch Layers ist eine Kommandozeilenanwendung, die periodisch die Daten der vergangenen halben Stunde aus der Datenbank läd und darauf basierend Füllstände je Parkhaus in 10 Minuten Intervallen berechnet.
 Da der Datengenerator beschleunigt Daten generiert, läuft diese Anwendung auch beschleunigt und berechnet alle 2 Minuten die Daten einer halben Stunde.
 
 
