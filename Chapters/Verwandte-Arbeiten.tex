@@ -29,6 +29,14 @@ Hieraus ergibt sich eine Aufteilung der Architektur in drei Schichten unterteilt
 	\item \textbf{Serving Layer:} Verbindet Batch- und Speed-Layer und stellt die Daten für Benutzeranfragen bereit. Kombiniert die Ergebnisse der beiden Schichten und ermöglicht so eine konsistente und effiziente Datenbereitstellung.
 \end{itemize}
 
+
+\begin{figure}[h] % [h] bedeutet "here" (hier)
+    \centering
+    \includegraphics[width=0.8\textwidth]{Graphics/Lambda_Architecture.png} % Bild einfügen
+    \caption{Aufbau der Lambda-Architektur \cite{entwickler_lambda_kappa}.}
+    \label{fig:beispielbild}
+\end{figure}
+
 Durch diese klare Trennung der Verarbeitungsebenen ermöglicht die Lambda-Architektur ein Gleichgewicht zwischen geringer Latenz und hoher Genauigkeit. Während die Batch Layer eine robuste und fehlertolerante Verarbeitung großer Datenmengen gewährleistet, wäre es zu zeitaufwändig, diese Schicht bei jeder Anfrage vollständig zu durchlaufen, um aktuelle Daten bereitzustellen. Hier kommt der Speed Layer ins Spiel: Er verarbeitet neue Daten in Echtzeit und stellt sie sofort zur Verfügung, um eine schnelle Reaktionszeit zu gewährleisten.
 
 \section{Anwendungsfälle der Lambda-Architektur}
