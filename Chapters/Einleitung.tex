@@ -1,10 +1,5 @@
 \chapter{Einleitung}
-
-Im Rahmen der Vorlesung \quotes{Software-Architektur} haben wir eine Fallstudie zur Lambda-Architektur durchgeführt.
-In diesem Kapitel erläutern wir zunächst, warum wir uns für die Betrachtung dieser Architektur entschieden haben. 
-Wir stellen die Idee unserer Fallstudie dar, in welcher ein simuliertes Parkhaussystem analysiert wird.
-Anschließend definieren wir die Forschungsziele, die wir mit dieser Fallstudie erreichen wollen,
-und geben einen Überblick über die eingesetzten Technologien.
+In diesem Kapitel geben wir eine Einführung in die Ausarbeitung unserer Fallstudie. Wir erläutern unsere Motivation, warum wir uns für das Thema Lambda-Architektur entschieden haben, und stellen unsere Idee für die Analyse eines Parkhaussystems vor, das als Anwendungsfall für die Umsetzung der Lambda-Architektur dient. Anschließend werden wir die konkreten Ziele, die wir mit dieser Fallstudie erreichen wollen, sowie unser weiteres Vorgehen bei der Implementierung und Evaluierung definieren.
 
 \section{Motivation}
 Heutzutage werden immer größere Datenmengen verarbeitet. Moderne Anwendungen müssen daher in der Lage sein, große Datenströme effizient zu verarbeiten, zu speichern und bereitzustellen, ohne dabei Verlust an Leistung oder Zuverlässigkeit zu riskieren.
@@ -16,46 +11,36 @@ Ein zentrales Problem bei der Verarbeitung großer Datenmengen wird durch das CA
 	\item \textbf{Partition Tolerance (Partitionstoleranz)}: Das System funktioniert weiter, auch wenn Teile des Netzes ausfallen oder Kommunikationsprobleme auftreten.
 \end{itemize}
 
-Allerdings definiert das CAP-Theorem hierbei eine grundlegende Einschränkung:
-Ein System kann immer nur zwei dieser drei Eigenschaften garantieren. 
-In datenintensiven Anwendungen, die eine hohe Fehlertoleranz (Partition Tolerance) und Verfügbarkeit (Availability) erfordern, kann daher nicht sichergestellt werden, dass jede Abfrage immer die aktuellsten Daten liefert. Dies stellt eine große Herausforderung für Systeme dar, die sowohl Echtzeitdatenverarbeitung als auch Langzeitanalysen ermöglichen sollen.
+Allerdings stellt das CAP-Theorem eine grundlegende Einschränkung dar: Ein System kann immer nur zwei dieser drei Eigenschaften gleichzeitig garantieren. In datenintensiven Anwendungen, die eine hohe Fehlertoleranz (Partition Tolerance) und Verfügbarkeit (Availability) erfordern, kann daher nicht sichergestellt werden, dass jede Abfrage immer die aktuellsten Daten in einer akzeptablen Zeit liefert. Dies stellt eine große Herausforderung für Systeme dar, die sowohl Echtzeitdatenverarbeitung als auch Langzeitanalysen ermöglichen sollen.
 
-Die Lambda-Architektur ist ein Architekturmuster, das speziell für Big-Data-Anwendungen entwickelt wurde, also für Systeme, die große Datenmengen effizient verarbeiten müssen. Ihr Ziel ist es, eine fehlertolerante und hochverfügbare Architektur bereitzustellen, die trotz der Einschränkungen des CAP-Theorems eine möglichst hohe Datenkonsistenz gewährleistet. Sie begegnet dem Problem des CAP-Theorems, indem sie zwei Verarbeitungswege kombiniert: den Batch Layer für konsistente Langzeitanalysen und den Speed Layer für schnelle Echtzeitabfragen.
+Im Rahmen der Vorlesung „Software-Architektur“ haben wir uns entschieden, eine Fallstudie zur Lambda-Architektur zu erstellen. Die Lambda-Architektur ist ein Architekturmuster, das speziell für Big-Data-Anwendungen entwickelt wurde, also für Systeme, die große Datenmengen effizient verarbeiten müssen. Ihr Ziel ist es, eine fehlertolerante und hochverfügbare Architektur bereitzustellen, die trotz der Einschränkungen des CAP-Theorems eine möglichst hohe Datenkonsistenz gewährleistet. Sie begegnet dem Problem des CAP-Theorems, indem sie zwei Verarbeitungswege kombiniert: den Batch Layer für konsistente Langzeitanalysen und den Speed Layer für schnelle Echtzeitabfragen.
 
 In dieser Fallstudie wollen wir diese Eigenschaften der Lambda-Architektur analysieren und bewerten. Dazu simulieren wir einen realen Anwendungsfall, in dem sowohl die Langzeitanalyse großer Datenmengen als auch die schnelle Bereitstellung neuer Daten eine zentrale Rolle spielen.
 
-Wir orientieren uns dabei an bestehenden Anwendungsgebieten der Lambda-Architektur. Diese Architektur ist insbesondere in Web- und IoT-Anwendungen weit verbreitet, da sie eine skalierbare Verarbeitung großer Datenmengen bei gleichzeitig schneller Verfügbarkeit aktueller Daten ermöglicht.
+Wir orientieren uns dabei an bestehenden Anwendungsgebieten der Lambda-Architektur. Diese Architektur ist insbesondere in Web- und Smart City Anwendungen weit verbreitet, da sie eine skalierbare Verarbeitung großer Datenmengen bei gleichzeitig schneller Verfügbarkeit aktueller Daten ermöglicht.
 
-\todo[inline]{Parkhaus = IoT-Anwendung? SmartCity? Anderes?}
-Für unsere konkrete Fallstudie haben wir uns für eine IoT-Anwendung im Bereich der Parkhausanalyse entschieden.
-Ziel ist es, ein Parkhaussystem zu simulieren, das mithilfe von Kameras die Ein- und Ausfahrten in mehreren Parkhäusern erfasst und analysiert.
-\todo[inline]{fahrzeugspezifische Informationen (Breite etc?) in serving layer überhaupt verfügbar? wenn nicht, trotzdem erwähnen?}
-Dabei sollen fahrzeugspezifische Informationen gespeichert und verarbeitet werden. 
-Dieses Szenario eignet sich aus unserer Sicht gut für die Lambda-Architektur, da sich Anwendungsfälle sowohl für Langzeitanalysen (z.B. Belegungsmuster über mehrere Wochen) als auch für Echtzeitabfragen (z.B. aktuelle Parkplatzverfügbarkeit) ergeben.
+Für unsere konkrete Fallstudie haben wir uns für eine Smart City Anwendung im Bereich der Parkhausanalyse entschieden. Ziel ist es, ein simuliertes Parkhaussystem zu entwickeln, das mithilfe von Kameras die Ein- und Ausfahrten in mehreren Parkhäusern erfasst und analysiert. Dabei sollen fahrzeugspezifische Informationen gespeichert und verarbeitet werden. Dieses Szenario eignet sich aus unserer Sicht besonders gut für die Lambda-Architektur, da es sowohl Langzeitanalysen (z.B. Belegungsmuster über mehrere Wochen) als auch Echtzeitabfragen (z.B. aktuelle Parkplatzverfügbarkeit) kombiniert.
 
 
 \section{Forschungsfragen}
 Mit dem Ziel unserer Fallstudie vor Augen können wir die folgenden Forschungsfragen definieren, die wir durch unsere Implementierung der Lambda-Architektur beantworten möchten:
 \begin{itemize}
-	\item \textbf{RQ1:} Mit welchen Technologien kann eine Lambda-Architektur umgesetzt werden?
+	\item \textbf{RQ1:} Inwiefern lässt sich eine einfache, aber funktionsfähige Lambda-Architektur in einer kleinen, simulierten Umgebung implementieren?
 	\item \textbf{RQ2:} Welche architektonischen Eigenschaften der Lambda-Architektur lassen sich in unserer Fallstudie identifizieren?
-	\item \textbf{RQ3:} Was sind Vor- und Nachteile der Lambda-Architektur?
-	\item \textbf{RQ4:} Welche Herausforderungen treten bei der Implementierung der Lambda-Architektur in einer kleinen, nicht skalierten Umgebung auf?
+	\item \textbf{RQ3:} Welche Herausforderungen treten bei der Implementierung der Lambda-Architektur in einer kleinen, nicht skalierten Umgebung auf?
 \end{itemize}
 
 \section{Forschungsansatz}
 Unser Ziel in dieser Fallstudie ist es, eine einfache, aber funktionsfähige Implementierung der Lambda-Architektur in einer simulierten Umgebung zu entwickeln. Der Fokus liegt dabei nicht auf der Entwicklung einer produktionsreifen Lösung für ein reales Parkhaussystem, sondern vielmehr auf der Schaffung eines praxisnahen Szenarios, das hilft, die Architektur besser zu verstehen und ihre Vor- und Nachteile zu evaluieren.
 
-Um dieses Ziel zu erreichen, entwickeln wir eine Datenquelle, die Ein- und Ausfahrten verschiedenartiger Autos simuliert.
-Diese Daten durchlaufen die verschiedenen Schichten der Lambda-Architektur, so dass sowohl Echtzeit- als auch Batch-Verarbeitung getestet werden können.
+Um dieses Ziel zu erreichen, entwickeln wir eine simulierte Datenquelle, die künstliche Fahrzeugdaten generiert. Diese Daten durchlaufen die verschiedenen Schichten der Lambda-Architektur, so dass sowohl Echtzeit- als auch Batch-Verarbeitung getestet werden können.
 
-Um die erste Forschungsfrage (RQ1) zu beantworten, haben wir uns für bewährte Open-Source-Technologien entschieden.
-Anstatt eine eigene Architektur von Grund auf neu zu entwickeln, verwenden wir existierende Werkzeuge, die bereits in der Praxis für die Lambda-Architektur eingesetzt werden. Die Auswahl basiert auf einer Literaturrecherche zu typischen Technologien für die drei Schichten der Lambda-Architektur. Eine detaillierte Erläuterung der Komponenten und Funktionsweisen der Lambda-Architektur erfolgt in Kapitel 2.
+Um die erste Forschungsfrage (RQ1) zu beantworten, haben wir uns für eine Implementierung auf Basis bewährter Open-Source-Technologien entschieden. Anstatt eine eigene Architektur von Grund auf neu zu entwickeln, verwenden wir existierende Werkzeuge, die bereits in der Praxis für die Lambda-Architektur eingesetzt werden. Die Auswahl basiert auf einer Literaturrecherche zu typischen Technologien für die drei Schichten der Lambda-Architektur. Eine detaillierte Erläuterung der Komponenten und Funktionsweisen der Lambda-Architektur erfolgt in Kapitel 2.
 
-Der Speed Layer der Lambda-Architektur ist für die Echtzeitverarbeitung zuständig. Im Speed Layer müssen die Daten schnell verarbeitet werden. Für die Implementierung des Speed Layers wurde daher Apache Kafka gewählt. Kafka ermöglicht eine schnelle und zuverlässige Verarbeitung und Weiterleitung von Datenströmen.
+Der Speed Layer der Lambda-Architektur ist für die Echtzeitverarbeitung zuständig. Im Speed Layer müssen die Daten schnell verarbeitet werden. Für die Implementierung der Speed Layer wurde daher Apache Kafka gewählt. Kafka ermöglicht eine schnelle und zuverlässige Verarbeitung und Weiterleitung von Datenströmen.
 
 Der Serving Layer übernimmt die Aggregation und Bereitstellung der verarbeiteten Daten. Er verbindet den Speed- und den Batch-Layer und bietet eine zusammenführende Sicht auf die gespeicherten Informationen. Wir haben uns entschieden, den Serving Layer mit Apache Cassandra zu realisieren. Cassandra ist eine NoSQL-Datenbank, die speziell für schnelle Abfragen optimiert ist und in vielen realen Implementierungen der Lambda-Architektur für den Serving Layer verwendet wird.
 
 Im Batch Layer werden alle historischen Rohdaten gespeichert und verarbeitet. In der klassischen Lambda-Architektur werden hier häufig verteilte Systeme wie Apache Hadoop oder Apache Spark eingesetzt, da diese für den Umgang mit großen Datenmengen optimiert sind. Da in unserer Fallstudie jedoch nicht mit so großen Datenmengen gearbeitet wird, verzichten wir auf eine skalierbare, verteilte Speicherung. Stattdessen verwenden wir auch hier Apache Cassandra, da es sowohl für schnelle Lesezugriffe als auch für die Langzeitspeicherung großer Datenmengen optimiert ist. 
 
-Die Anwendung wird in C\# entwickelt, da diese Sprache eine gute Integration mit Apache Kafka und Apache Cassandra bietet. Für die Verwaltung und Bereitstellung der verschiedenen Komponenten verwenden wir Docker. Diese Container-Technologie ermöglicht eine einfache Installation, Verwaltung und Reproduzierbarkeit unserer Umgebung, da alle benötigten Dienste in isolierten Containern laufen und unabhängig von der Konfiguration des Host-Systems sind.
+Die Anwendung wird in C\# entwickelt, da diese Sprache eine gute Integration mit Apache Kafka und Apache Cassandra bietet und sich gut für die Implementierung unserer simulierten Umgebung eignet. Für die Verwaltung und Bereitstellung der verschiedenen Komponenten verwenden wir Docker. Diese Container-Technologie ermöglicht eine einfache Installation, Verwaltung und Reproduzierbarkeit unserer Umgebung, da alle benötigten Dienste in isolierten Containern laufen und unabhängig von der Konfiguration des Host-Systems sind.
