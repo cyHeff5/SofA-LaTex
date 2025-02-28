@@ -107,6 +107,12 @@ Immer, wenn ein Batch-Vorgang abgeschlossen ist, schreibt die Anwendung eine Ben
 Diese Nachricht signalisiert dem Serving Layer, dass es seine Batch-Daten neu laden und veraltete Speed-Layer-Daten verwerfen soll.
 Da der Datengenerator beschleunigt Daten generiert, läuft diese Anwendung auch beschleunigt und berechnet alle 2 Minuten die Daten einer halben Stunde.
 
+Es existiert ein weiterer Batch-View, der tägliche Tagesmetriken berechnet.
+Diese beinhalten Durchschnitts- und Maximalwerte für Länge, Breite, Höhe und Gewicht der Autos, die sich an einem Tag in einem Parkhaus befunden haben.
+Dazu wird die Anzahl der für die Berechnung der Durchschnittswerte genutzten Autodaten mitgespeichert, um Durchschnittswerte über andere Zeitfenster wie Wochen, Wochentage, Monate und Jahre bilden zu können.
+Die Idee dahinter war, Metriken für Statik und Einteilung zukünftiger Parkhäuser berechnen zu können.
+Aus Aufwandsgründen existiert hierzu allerdings nur die Batch-Berechnung, sowie eine zugehörige Cassandra-Tabelle.
+Die Integration in Serving Layer und Frontend ist nicht mehr geschehen.
 
 \section{Serving Layer}
 Das Serving Layer besteht nur aus einem Projekt \quotes{ServingLayer}.
