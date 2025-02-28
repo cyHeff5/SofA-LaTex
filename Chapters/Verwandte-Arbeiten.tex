@@ -1,4 +1,5 @@
 \chapter{Verwandte Arbeiten}
+\todo[inline]{Kapitelname ueberdenken (hab angst vor umlauten in umgebungen), hier auch beschreibung was lambda ueberhaupt ist}
 In diesem Kapitel geben wir einen Überblick über bestehende Arbeiten zur Lambda-Architektur und deren Einfluss auf die Entscheidungen, die wir bei der Entwicklung unserer Fallstudie getroffen haben. Zunächst erläutern wir die grundlegende Struktur der Lambda-Architektur, ihre Kernkomponenten und ihre Ziele. Anschließend betrachten wir existierende Implementierungen, die als Inspiration für unser eigenes Fallstudienszenario dienten.
 
 Darauf aufbauend analysieren wir die architektonischen Eigenschaften der Lambda-Architektur sowie ihre bekannten Vor- und Nachteile, um eine Grundlage für die spätere Bewertung unserer Fallstudie zu schaffen. Abschließend vergleichen wir die Lambda-Architektur mit der Kappa-Architektur, einer alternativen Architektur, die in bestimmten Szenarien die Schwächen der Lambda-Architektur umgehen soll.
@@ -6,16 +7,26 @@ Darauf aufbauend analysieren wir die architektonischen Eigenschaften der Lambda-
 \section{Überblick über die Lambda-Architektur}
 Die Lambda-Architektur wurde von Nathan Marz \cite{warren2015big} als Antwort auf die wachsenden Herausforderungen bei der Verarbeitung großer Datenmengen im Zeitalter von Big Data entwickelt. Sie entstand aus der Erkenntnis, dass herkömmliche Architekturen oft zu komplex, fehleranfällig und schwer skalierbar sind. In vielen Systemen kann bereits ein einziger Datenfehler oder der Ausfall einer Komponente dazu führen, dass das gesamte System inkonsistent wird, Daten verloren gehen oder verfälscht werden und das System nicht mehr zuverlässig arbeitet.
 
-Ein weiteres Problem klassischer Architekturen ist, dass sie Echtzeit- und Batchverarbeitung nicht effizient kombinieren können. Bei Big-Data-Anwendungen muss das System nicht nur jederzeit auf die Daten zugreifen und auf Anfragen reagieren können, sondern auch sicherstellen, dass die gelieferten Informationen stets aktuell sind. Dies würde bedeuten, dass bei jeder einzelnen Anfrage alle gespeicherten Daten vollständig durchsucht und verarbeitet werden müssten, um die aktuellsten Werte zu gewährleisten. Bei wachsenden Datenmengen wird dies jedoch schnell ineffizient und führt zu hohen Latenzzeiten und Systembelastungen.
+Ein weiteres Problem klassischer Architekturen ist, dass sie Echtzeit- und historische Daten nicht effizient kombinieren können.
+Bei Big-Data-Anwendungen muss das System nicht nur jederzeit auf die Daten zugreifen und auf Anfragen reagieren können, sondern auch sicherstellen, dass die gelieferten Informationen stets aktuell sind. Dies würde bedeuten, dass bei jeder einzelnen Anfrage alle gespeicherten Daten vollständig durchsucht und verarbeitet werden müssten, um die aktuellsten Werte zu gewährleisten. Bei wachsenden Datenmengen wird dies jedoch schnell ineffizient und führt zu hohen Latenzzeiten und Systembelastungen.
 
-Um diese Probleme zu lösen, verfolgt die Lambda-Architektur einen Ansatz, der große Datenmengen effizient verarbeitet und gleichzeitig Fehlertoleranz, Skalierbarkeit und Konsistenz gewährleistet. Ein zentrales Konzept ist dabei die unveränderliche Speicherung von Daten (Immutable Data). Dadurch können historische Daten jederzeit erneut verarbeitet werden, ohne dass das System inkonsistent wird.
+Um diese Probleme zu lösen, verfolgt die Lambda-Architektur einen Ansatz, der große Datenmengen effizient verarbeitet und gleichzeitig Fehlertoleranz, Skalierbarkeit und Konsistenz gewährleistet.
+Hierzu werden Berechnungen nach ihrer Komplexität in Echtzeit- und Batch-Berechnungen unterschieden.
+Echtzeit-Berechnungen werden direkt auf eintreffenden Daten ausgeführt und ermöglichen eine aktuellen Überblick.
+Hierzu dürfen diese nur wenig Zeit in Anspruch nehmen, weshalb es sich in der Regel um inkrementelle Berechnungen handelt.
+Batch-Berechnungen werden periodisch auf der Gesamtheit aller Daten ausgeführt und können eine lange Zeit in Anspruch nehmen.
+Diese Berechnungen können beliebig komplex sein, ihre Ergebnisse sind allerdings stets erst verzögert verfügbar.
 
-Das Hauptziel der Lambda-Architektur ist es, Echtzeit- und Batch-Verarbeitung strukturell zu trennen, um die Vorteile beider Methoden zu kombinieren. Zu diesem Zweck ist die Architektur in drei Schichten unterteilt (siehe Abbildung 1):
+Das Hauptziel der Lambda-Architektur ist es, 
+die aktuellen Daten aus Echtzeit-Berechnungen mit den Ergebnissen der letzten Batch-Berechnungen zu kombinieren,
+um Anfragen über historische und aktuelle Daten hinweg zu ermöglichen.
+% Hierzu ist eine sorgfältige Einteilung von Berechnungen in Echtzeit-Berechnungen bzw. Batch-Berechnungen notwendig.
+Hieraus ergibt sich eine Aufteilung der Architektur in drei Schichten unterteilt (siehe Abbildung 1):
 
 \begin{itemize}
-	\item \textbf{Batch Layer:} Speichert alle Rohdaten unverändert und dient als Langzeitarchiv. Ein wesentlicher Aspekt dieser Schicht ist, dass die gespeicherten Daten nicht verändert werden, sondern ausschließlich für regelmäßige Langzeitanalysen verwendet werden.
-	\item \textbf{Speed Layer:} Verarbeitet Datenströme in Echtzeit, um sofortige Ergebnisse zu liefern. Da der Batch-Layer aufgrund seiner Struktur nicht für schnelle Abfragen geeignet ist, übernimmt der Speed-Layer die Aufgabe, aktuelle Daten schnell zur Verfügung zu stellen.
-	\item \textbf{Serving Layer:} Verbindet die Batch- und die Speed-Layer und stellt die Daten für Benutzeranfragen bereit. Kombiniert die Ergebnisse der beiden Schichten und ermöglicht so eine konsistente und effiziente Datenbereitstellung.
+	\item \textbf{Batch Layer:} Speichert alle Rohdaten unverändert und dient als Langzeitarchiv. Dadurch können die Daten wiederholt verarbeitet und für regelmäßige Langzeitanalysen verwendet werden.
+	\item \textbf{Speed Layer:} Verarbeitet Datenströme in Echtzeit, um sofortige Ergebnisse zu liefern. Da der Batch-Layer nicht für schnelle Abfragen geeignet ist, übernimmt der Speed-Layer die Aufgabe, aktuelle Daten schnell zur Verfügung zu stellen.
+	\item \textbf{Serving Layer:} Verbindet Batch- und Speed-Layer und stellt die Daten für Benutzeranfragen bereit. Kombiniert die Ergebnisse der beiden Schichten und ermöglicht so eine konsistente und effiziente Datenbereitstellung.
 \end{itemize}
 
 Durch diese klare Trennung der Verarbeitungsebenen ermöglicht die Lambda-Architektur ein Gleichgewicht zwischen geringer Latenz und hoher Genauigkeit. Während die Batch Layer eine robuste und fehlertolerante Verarbeitung großer Datenmengen gewährleistet, wäre es zu zeitaufwändig, diese Schicht bei jeder Anfrage vollständig zu durchlaufen, um aktuelle Daten bereitzustellen. Hier kommt der Speed Layer ins Spiel: Er verarbeitet neue Daten in Echtzeit und stellt sie sofort zur Verfügung, um eine schnelle Reaktionszeit zu gewährleisten.
