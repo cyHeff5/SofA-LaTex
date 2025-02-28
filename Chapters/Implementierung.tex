@@ -74,7 +74,7 @@ In der Datenbank stehen Einfahrts- und Ausfahrts-Events in der selben Tabelle un
 \section{Speed Layer}
 Der Speed Layer beinhaltet nur ein einzelnes Projekt \quotes{SpeedLayerParkingDeckWorker}, das gleichzeitig Kafka-Consumer und Kafka-Producer ist.
 Dabei handelt es sich um eine Kommandozeilenanwendung, die die eingehenden Grunddaten aus der Kafka-Topic \quotes{car-events} erhält und für ein einzelnes Parkhaus mehrere Events zu einer Zwischensumme zusammenfasst.
-Diese Zwischensumme entspricht der Differenz der im Parkhaus stehenden Autos im Vergleich zum Stand vor den Events.
+Diese Zwischensumme entspricht der Differenz der im Parkhaus stehenden Autos im Vergleich zum Stand vor den Events, sie wird gebildet, damit das Serving-Layer nicht alle Park-Events einzeln verarbeiten muss.
 Wird eine Obergrenze an Park-Events für ein Parkhaus erreicht, oder ist eine Zeitspanne seit dem ersten Park-Event abgelaufen, so wird die Differenz gemeinsam mit der Parkhaus-Id in eine zweite Kafka-Topic \quotes{car-events-preprocessed} geschrieben.
 Die Obergrenze an Parkevents, sowie die Zeitspanne sind im Worker konfigurierbar.
 Es können beliebig viele Speed-Layer-Worker gleichzeitig gestartet werden, wobei je Parkhaus ein Speed-Layer-Worker vorgesehen ist.
