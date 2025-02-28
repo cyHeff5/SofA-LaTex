@@ -25,6 +25,7 @@ Die Daten hierin werden aktuell manuell angelegt.
 \end{figure}%
 
 In der Tabelle \ref{fig:table_parking_events} sind alle in der Vergangenheit geschehenen Park-Events gespeichert.
+Jedes dieser Events stellt die Ein- beziehungsweise Ausfahrt eines Autos in ein Parkhaus dar.
 Bei diesen Daten handelt es sich um reine Rohdaten, die den unverarbeiteten Daten von Parkhäusern entsprechen.
 
 \begin{figure}[h!]%
@@ -105,14 +106,18 @@ Das Serving Layer besteht nur aus einem Projekt \quotes{ServingLayer}.
 Hier handelt es sich um eine Kommandozeilenanwendung, die Daten aus Kafka und Cassandra zusammenführt und für Benutzeranwendungen bereitstellt.
 Beim Start liest der Serving Layer alle existierenden Parkhäuser aus der Cassandra-Datenbank und legt sich je Parkhaus einen Cache an.
 Dazu werden die Kafka-Topics \quotes{car-events-preprocessed}, deren Daten im Speed Layer berechnet werden, und \quotes{batch-notification} abonniert.
-Dieser Cache beinhaltet die aktuelle Anzahl an Autos im Parkhaus, die sich aus dem Ergebnis der letzten Batch-Zwischensumme, sowie der seitdem angefallenen Summe an Park-Events in \quotes{car-events-preprocessed} ergibt.
-Immer wenn eine Nachricht in \quotes{batch-notification} den Abschluss eines weiteren Batch-Vorgangs signalisiert, wird die aktuelle Batch-Zwischensumme neu geladen, sowie der veraltete Teil der Speed Layer Daten aus \quotes{car-events-preprocessed} verworfen.
+Dieser Cache beinhaltet die aktuelle Anzahl an Autos im Parkhaus, die sich aus dem Ergebnis des letzten Batch-Views, sowie der seitdem angefallenen Summe an Park-Events in \quotes{car-events-preprocessed} ergibt.
+Immer wenn eine Nachricht in \quotes{batch-notification} den Abschluss eines weiteren Batch-Vorgangs signalisiert, wird der neue Batch-View geladen und der veraltete Teil der Speed Layer Daten aus \quotes{car-events-preprocessed} verworfen.
 Aufgrund des Aufbaus des Speed-Layers, sowie der asynchronen Natur von Batch- und Speed-Layer kann ein Ergebnis des Speed-Layers Daten aus 2 Batch-Berechnungen beinhalten.
 Das kann zu temporären Inkonsistenzen führen, die aber nach der nächsten Batch-Berechnung korrigiert sind.
-Anwendungen können die Daten vom Serving Layer über TCP/IP abfragen.
-Wenn Historische Daten, die sich nicht im Cache befinden, wie Füllstände über Zeit abgefragt werden, leitet das Serving Layer die Anfrage an die Cassandra-Datenbank durch.
+Anwendungen können die Daten des Serving Layers über TCP/IP abfragen.
+Wenn Historische Daten, die sich nicht im Cache befinden, wie Füllstände zu einer früheren Zeit abgefragt werden, leitet das Serving Layer die Anfrage an die Cassandra-Datenbank durch.
 
 \section{Frontend}
-Das Frontend ist in Avalonia 
-%Avalonia
-%nur mit 
+
+Zur Visualisierung des Projektes, insbesondere im Zuge der Präsentation, wurde eine grafische Anwendung geschrieben.
+Diese ist wie der Rest des Projektes ebenfalls in C\# geschrieben und verwendet Avalonia, ein von WPF (Windows Presentation Foundation) inspiriertes Cross-Platform UI-Framework.
+Zur Visualisierung der Daten in Form von Diagrammen wird LiveCharts2 eingesetzt.
+
+Das Frontend kommuniziert über TCP/IP mit dem Serving Layer und hat keine Kenntnis von den restlichen Schichten.
+Hierüber fragt das UI periodisch die aktuellen Daten ab.
